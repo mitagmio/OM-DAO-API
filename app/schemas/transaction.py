@@ -12,20 +12,28 @@ class DecodedInput(BaseModel):
         allow_population_by_field_name = True
 
 
+class EventArgs(BaseModel):
+    to_address: Optional[str] = Field(alias="to")
+    amount: int
+    symbol: str
+    price: int
+    referal_code: str = Field(alias="referalCode")
+
+    class Config:
+        allow_population_by_field_name = True
+
+
 class Transaction(BaseModel):
     block_number: Optional[int] = Field(alias="blockNumber")
-    hash: Optional[str]
+    hash: Optional[str] = Field(alias="transactionHash")
     timestamp: Optional[int]
-    from_address: Optional[str] = Field(alias="from")
-    to_address: Optional[str] = Field(alias="to")
-    input: Optional[str] = Field(exclude=True)
-    decoded_input: Optional[DecodedInput] = Field(alias="decodedInput")
+    event_args: Optional[EventArgs] = Field(alias="args")
 
     class Config:
         allow_population_by_field_name = True
 
     @root_validator(pre=True)
     def convert(cls, values):
-        if 'hash' in values and not isinstance(values['hash'], str):
-            values['hash'] = values['hash'].hex()
+        if 'transactionHash' in values and not isinstance(values['transactionHash'], str):
+            values['transactionHash'] = values['transactionHash'].hex()
         return values

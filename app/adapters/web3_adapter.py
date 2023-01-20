@@ -28,6 +28,14 @@ class Web3Adapter(BlockchainAdapter):
         str_value = str_value.replace('\x00', '')
         return str_value
 
+    def _get_block_timestamp(self, block_number) -> int:
+        block = self.web3.eth.get_block(block_number)
+        return block['timestamp']
+
+    def get_latest_block_number(self) -> int:
+        block = self.web3.eth.get_block('latest')
+        return block['number']
+
     def get_block_transactions(self, block_number: int) -> Optional[list[schemas.Transaction]]:
         try:
             block = self.web3.eth.get_block(block_number, full_transactions=True)
@@ -65,3 +73,12 @@ class Web3Adapter(BlockchainAdapter):
             self._str_to_bytes32(referal_code),
             self._str_to_bytes32(symbol)
         ).call()
+
+    def get_transactions_by_events(self, from_block: int, to_block: int) -> list[schemas.Transaction]:
+        events = self.contract.events.BuyTokenRef.getLogs(fromBlock=from_block, toBlock=to_block)
+        transactions = []
+        for event in events:
+            transaction = schemas.Transaction.parse_obj(event)
+            transaction.timestamp = self._get_block_timestamp(transaction.block_number)
+            transactions.append(transaction)
+        return transactions

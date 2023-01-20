@@ -25,7 +25,7 @@ app.include_router(api_router, prefix='/api')
 
 
 @app.on_event("startup")
-@repeat_every(seconds=10)
+@repeat_every(seconds=60)
 def update_transactions() -> None:
     with SessionLocal() as db:
         use_case = get_tokens_use_case(db)

@@ -14,6 +14,8 @@ class FrameworkAdapter:
 
 
 class BlockchainAdapter:
+    def get_latest_block_number(self) -> int: ...
+
     def get_block_transactions(self, block_number: int) -> Optional[list[schemas.Transaction]]: ...
 
     def decode_input(self, input_data: str) -> Optional[schemas.DecodedInput]: ...
@@ -21,6 +23,8 @@ class BlockchainAdapter:
     def get_whitelisted_symbols(self) -> list[str]: ...
 
     def get_infl_token_size(self, referal_code: str, symbol: str) -> int: ...
+
+    def get_transactions_by_events(self, from_block: int, to_block: int) -> list[schemas.Transaction]: ...
 
 
 class BlockchainStorage:
@@ -38,26 +42,26 @@ class TokensUseCase:
         self.blockchain_storage: BlockchainStorage = kwargs.get('blockchain_storage')
         self.start_block_number = settings.start_block_number
         self.contract_address = settings.contract_address
+        self.batch_size = settings.batch_size
 
     def update_transactions(self) -> None:
-        last_block_number = self.blockchain_storage.get_last_block_number()
-        block_number = last_block_number + 1 if last_block_number else self.start_block_number
+        last_scanned_block = self.blockchain_storage.get_last_block_number()
+        block_from = last_scanned_block + 1 if last_scanned_block else self.start_block_number
+        latest_block = self.blockchain_adapter.get_latest_block_number()
+        block_to = block_from + self.batch_size - 1
 
         while True:
-            transactions = self.blockchain_adapter.get_block_transactions(block_number)
-            if transactions is None:
+            if block_from > latest_block:
                 break
+            if block_to > latest_block:
+                block_to = latest_block
 
-            print(f'Block #{block_number} in progress')
+            transactions = self.blockchain_adapter.get_transactions_by_events(block_from, block_to)
+            print(f'Blocks #{block_from} - #{block_to} in progress')
+            self.blockchain_storage.add_transactions(block_to, transactions)
 
-            discovered_transactions = []
-            for transaction in transactions:
-                if transaction.to_address == self.contract_address:
-                    transaction.decoded_input = self.blockchain_adapter.decode_input(transaction.input)
-                    discovered_transactions.append(transaction)
-
-            self.blockchain_storage.add_transactions(block_number, discovered_transactions)
-            block_number += 1
+            block_from += self.batch_size
+            block_to += self.batch_size
 
     async def get_sold_tokens(self, referal_code: str) -> list[schemas.Token]:
         symbols = self.blockchain_adapter.get_whitelisted_symbols()

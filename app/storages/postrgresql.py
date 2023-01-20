@@ -23,8 +23,8 @@ class PostgresqlStorage(BlockchainStorage):
     def get_transactions(self, referal_code: str, symbol: str) -> list[schemas.Transaction]:
         db_transactions = (
             self.db.query(models.Transaction)
-                .filter(models.Transaction.data['decoded_input']['referal_code'].astext.like(referal_code),
-                        models.Transaction.data['decoded_input']['symbol'].astext.like(symbol))
+                .filter(models.Transaction.data['event_args']['referal_code'].astext.like(referal_code),
+                        models.Transaction.data['event_args']['symbol'].astext.like(symbol))
                 .all()
         )
         return [schemas.Transaction.parse_obj(db_transaction.data) for db_transaction in db_transactions]
