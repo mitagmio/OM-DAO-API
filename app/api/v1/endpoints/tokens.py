@@ -12,7 +12,15 @@ async def get_sold_tokens(
         referal_code: str,
         use_case: TokensUseCase = Depends(get_tokens_use_case)
 ) -> list[schemas.Token]:
+    """
+    Returns sold tokens by referal code.
 
+    Args:
+        referal_code (str): referal code;
+        use_case (TokensUseCase, optional): tokens use case business logic. Defaults to Depends(get_tokens_use_case).
+    Returns:
+        list[schemas.Token]: token list.
+    """
     return await use_case.get_sold_tokens(referal_code)
 
 
@@ -22,5 +30,29 @@ async def get_transactions(
         symbol: str,
         use_case: TokensUseCase = Depends(get_tokens_use_case)
 ) -> list[schemas.Transaction]:
+    """
+    Returns transactions by referal code and symbol.
 
+    Args:
+        referal_code (str): referal code;
+        symbol (str): symbol;
+        use_case (TokensUseCase, optional): tokens use case business logic. Defaults to Depends(get_tokens_use_case).
+    Returns:
+        list[schemas.Transaction]: transaction list.
+    """
     return await use_case.get_transactions(referal_code, symbol)
+
+
+@router.get("/last_scanned_block")
+async def last_scanned_block(
+        use_case: TokensUseCase = Depends(get_tokens_use_case)
+) -> dict:
+    """
+    Returns number of last scanned block.
+
+    Args:
+        use_case (TokensUseCase, optional): tokens use case business logic. Defaults to Depends(get_tokens_use_case).
+    Returns:
+        dict: number of last scanned block.
+    """
+    return await use_case.get_last_scanned_block_number()

@@ -71,3 +71,6 @@ class TokensUseCase:
 
     async def get_transactions(self, referal_code: str, symbol: str) -> list[schemas.Transaction]:
         return self.blockchain_storage.get_transactions(referal_code, symbol)
+
+    async def get_last_scanned_block_number(self) -> dict:
+        return {'lastScannedBlock': self.blockchain_storage.get_last_block_number()}
