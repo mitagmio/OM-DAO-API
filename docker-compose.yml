@@ -1,0 +1,19 @@
+version: '3.1'
+
+services:
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: omdao
+      POSTGRES_USER: omdao
+      POSTGRES_PASSWORD: omdao
+
+  test-om-dao-api:
+    build: .
+    depends_on:
+      - db
+    restart: always
+    ports:
+      - 8000:8000
