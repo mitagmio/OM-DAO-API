@@ -1,6 +1,13 @@
 version: '3.1'
 
 services:
+  omdao:
+    depends_on:
+      - db
+    build: .
+    restart: always
+    ports:
+      - 8000:8000
 
   db:
     image: postgres
@@ -9,11 +16,8 @@ services:
       POSTGRES_DB: omdao
       POSTGRES_USER: omdao
       POSTGRES_PASSWORD: omdao
+    volumes:
+      - pgdb_data:/var/lib/postgresql/data
 
-  test-om-dao-api:
-    build: .
-    depends_on:
-      - db
-    restart: always
-    ports:
-      - 8000:8000
+volumes:
+  pgdb_data:
