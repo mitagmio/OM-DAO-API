@@ -15,6 +15,19 @@ class Web3Adapter(BlockchainAdapter):
             ABI = json.load(json_file)
         self.contract = self.web3.eth.contract(settings.contract_address, abi=ABI)
 
+    @staticmethod
+    def _str_to_bytes32(value: str) -> bytes:
+        bytes_value = value.encode()
+        while len(bytes_value) < 32:
+            bytes_value += b'\x00'
+        return bytes_value
+
+    @staticmethod
+    def _bytes32_to_str(value: bytes) -> str:
+        str_value = value.decode('utf-8')
+        str_value = str_value.replace('\x00', '')
+        return str_value
+
     def get_block_transactions(self, block_number: int) -> Optional[list[schemas.Transaction]]:
         try:
             block = self.web3.eth.get_block(block_number, full_transactions=True)
@@ -36,19 +49,19 @@ class Web3Adapter(BlockchainAdapter):
         try:
             f, decoded_input_data = self.contract.decode_function_input(input_data)
             return schemas.DecodedInput(
-                symbol=self.contract.functions.byte32SymbolToString(decoded_input_data['symbol']).call(),
+                symbol=self._bytes32_to_str(decoded_input_data['symbol']),
                 amount=decoded_input_data['_amount'],
-                referal_code=self.contract.functions.byte32SymbolToString(decoded_input_data['referalCode']).call()
+                referal_code=self._bytes32_to_str(decoded_input_data['referalCode'])
             )
         except:
             return None
 
     def get_whitelisted_symbols(self) -> list[str]:
         symbols = self.contract.functions.getWhitelistedSymbols().call()
-        return [self.contract.functions.byte32SymbolToString(symbol).call() for symbol in symbols]
+        return [self._bytes32_to_str(symbol) for symbol in symbols]
 
     def get_infl_token_size(self, referal_code: str, symbol: str) -> int:
         return self.contract.functions.getInflTokenSize(
-            self.contract.functions.stringSymbolToByte32(referal_code).call(),
-            self.contract.functions.stringSymbolToByte32(symbol).call()
+            self._str_to_bytes32(referal_code),
+            self._str_to_bytes32(symbol)
         ).call()
