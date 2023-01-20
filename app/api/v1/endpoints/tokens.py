@@ -48,7 +48,7 @@ async def last_scanned_block(
         use_case: TokensUseCase = Depends(get_tokens_use_case)
 ) -> dict:
     """
-    Returns number of last scanned block.
+    Returns number of last background scanned block.
 
     Args:
         use_case (TokensUseCase, optional): tokens use case business logic. Defaults to Depends(get_tokens_use_case).
