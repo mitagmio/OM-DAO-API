@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Optional
 
 from app import schemas
@@ -62,11 +63,10 @@ class TokensUseCase:
         symbols = self.blockchain_adapter.get_whitelisted_symbols()
         tokens = []
         for symbol in symbols:
-            token = schemas.Token(
-                symbol=symbol,
-                amount=self.blockchain_adapter.get_infl_token_size(referal_code, symbol)
-            )
-            tokens.append(token)
+            amount = Decimal(
+                self.blockchain_adapter.get_infl_token_size(referal_code, symbol) / 1000000
+            ).quantize(Decimal('0.000001'))
+            tokens.append(schemas.Token(symbol=symbol, amount=amount))
         return tokens
 
     async def get_transactions(self, referal_code: str, symbol: str) -> list[schemas.Transaction]:
