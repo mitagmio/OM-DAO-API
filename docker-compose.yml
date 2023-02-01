@@ -6,18 +6,58 @@ services:
       - db
     build: .
     restart: always
-    ports:
-      - 8000:8000
+    env_file:
+      - ./.env
+      - ./.env_web
 
   db:
     image: postgres
     restart: always
-    environment:
-      POSTGRES_DB: omdao
-      POSTGRES_USER: omdao
-      POSTGRES_PASSWORD: omdao
+    env_file:
+      - ./.env
     volumes:
       - pgdb_data:/var/lib/postgresql/data
 
+  nginx-proxy:
+    container_name: nginx-proxy
+    build: nginx
+    restart: always
+    tty: true
+    ports:
+      - 443:443
+      - 80:80
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "100"
+    volumes:
+      - certs:/etc/nginx/certs
+      - html:/usr/share/nginx/html
+      - vhost:/etc/nginx/vhost.d
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    depends_on:
+      - web
+
+  nginx-proxy-letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    env_file:
+      - ./.env_letsencrypt
+    logging:
+      options:
+        max-size: "100m"
+        max-file: "100"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - html:/usr/share/nginx/html
+      - vhost:/etc/nginx/vhost.d
+      - acme:/etc/acme.sh
+    depends_on:
+      - nginx-proxy
+
 volumes:
   pgdb_data:
+  certs:
+  html:
+  vhost:
+  acme:
