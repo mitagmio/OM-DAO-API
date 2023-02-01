@@ -1,5 +1,5 @@
 # om-dao-api
-Postgres + LetsEncrypt-Nginx-Proxy-Companion + Python + alimbic. Production-ready api bot with database.
+Postgres + LetsEncrypt-Nginx-Proxy-Companion + Python + alimbic. Production-ready api with database.
 
 Начальная настройка:
 ```
