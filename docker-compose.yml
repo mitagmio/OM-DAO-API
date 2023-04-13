@@ -9,6 +9,8 @@ services:
     env_file:
       - ./.env
       - ./.env_web
+    networks:
+      - web
 
   db:
     image: postgres
@@ -37,6 +39,8 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
     depends_on:
       - omdao
+    networks:
+      - web
 
   nginx-proxy-letsencrypt:
     image: jrcs/letsencrypt-nginx-proxy-companion
@@ -54,6 +58,8 @@ services:
       - acme:/etc/acme.sh
     depends_on:
       - nginx-proxy
+    networks:
+      - web
 
 volumes:
   pgdb_data:
@@ -61,3 +67,8 @@ volumes:
   html:
   vhost:
   acme:
+
+
+networks:
+  web:
+    name: shared-web
